@@ -9,6 +9,8 @@ import { Address } from "~~/components/scaffold-eth";
 
 const position = { lat: -16.5068934, lng: -44.2878931 };
 
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
@@ -23,8 +25,15 @@ const Home: NextPage = () => {
             <p className="my-2 font-medium">Connected Address:</p>
             <Address address={connectedAddress} />
           </div>
-          <APIProvider apiKey={"AIzaSyAABJuXAyZ3C5Qd7mgkXDt-mbj-cNxdny0"}>
-            <Map defaultCenter={position} defaultZoom={10}>
+          <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+            <Map
+              defaultCenter={position}
+              defaultZoom={15}
+              mapId={null}
+              mapTypeId={"satellite"}
+              gestureHandling={"greedy"}
+              disableDefaultUI={true}
+            >
               <div style={{ height: 400 }}>
                 <Marker position={position} />
               </div>
