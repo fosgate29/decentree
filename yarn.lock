@@ -2559,6 +2559,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/google.maps@npm:^3.54.10":
+  version: 3.55.5
+  resolution: "@types/google.maps@npm:3.55.5"
+  checksum: 37518492accae6664e223e4a82a3302ebee36d01a3159750eed8de0c3b828f3c2306914f39088d4dbf41b008e1c5d5fe09ff7b49f6a3a9c7d9ce247eeb13fed9
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:*, @types/json-schema@npm:^7.0.12, @types/json-schema@npm:^7.0.6, @types/json-schema@npm:^7.0.9":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -3332,6 +3339,19 @@ __metadata:
     json-schema-to-ts: 1.6.4
     ts-morph: 12.0.0
   checksum: aa69e98b31e5b0db416e4906a70ff7b9fe168146a1d9e67007a2e4514999f7ce0d02153b6314f0ea6fb3a7a0c2ccf841511d09873695e8623a4d95546461bfc9
+  languageName: node
+  linkType: hard
+
+"@vis.gl/react-google-maps@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@vis.gl/react-google-maps@npm:0.8.0"
+  dependencies:
+    "@types/google.maps": ^3.54.10
+    fast-deep-equal: ^3.1.3
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 84a9c726e89a97e157b988e6bf98c3e70a37f911265a95fe229de6c2ddc639a0dfaeb9e7956190356a358f39be58bf7319c80f17a01d0051acb0acc2fe58e668
   languageName: node
   linkType: hard
 
@@ -11837,6 +11857,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@vis.gl/react-google-maps": ^0.8.0
     husky: ~8.0.3
     lint-staged: ~13.2.2
     next: ~14.0.4
