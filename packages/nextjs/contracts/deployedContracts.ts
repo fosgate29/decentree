@@ -10,13 +10,7 @@ const deployedContracts = {
       address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "_owner",
-              type: "address",
-            },
-          ],
+          inputs: [],
           stateMutability: "nonpayable",
           type: "constructor",
         },
@@ -25,40 +19,140 @@ const deployedContracts = {
           inputs: [
             {
               indexed: true,
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
               internalType: "address",
-              name: "greetingSetter",
+              name: "trustedWallet",
               type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "newGreeting",
-              type: "string",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "premium",
-              type: "bool",
             },
             {
               indexed: false,
               internalType: "uint256",
-              name: "value",
+              name: "amount",
               type: "uint256",
             },
           ],
-          name: "GreetingChange",
+          name: "LogAllFundsSentToWallet",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "contributor",
+              type: "address",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
+                  type: "uint256",
+                },
+              ],
+              indexed: false,
+              internalType: "struct YourContract.LatLng",
+              name: "treeId",
+              type: "tuple",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "firstDepositTimestamp",
+              type: "uint256",
+            },
+          ],
+          name: "LogDeposited",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "trustedWallet",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "LogFundsSentToWallet",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "contributor",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "LogRefunded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "wallet",
+              type: "address",
+            },
+          ],
+          name: "LogVaultCreated",
           type: "event",
         },
         {
           inputs: [],
-          name: "greeting",
+          name: "DONATION_VALUE",
           outputs: [
             {
-              internalType: "string",
+              internalType: "uint256",
               name: "",
-              type: "string",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -66,25 +160,12 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "owner",
+          name: "ONE_YEAR",
           outputs: [
             {
-              internalType: "address",
+              internalType: "uint256",
               name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "premium",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -93,23 +174,49 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "string",
-              name: "_newGreeting",
-              type: "string",
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
             },
           ],
-          name: "setGreeting",
+          name: "depositValue",
           outputs: [],
           stateMutability: "payable",
           type: "function",
         },
         {
-          inputs: [],
-          name: "totalCounter",
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          name: "deposits",
           outputs: [
             {
+              internalType: "address",
+              name: "treeOwner",
+              type: "address",
+            },
+            {
               internalType: "uint256",
-              name: "",
+              name: "firstDepositTimestamp",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "nextDisbursement",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "balance",
               type: "uint256",
             },
           ],
@@ -120,16 +227,28 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "address",
-              name: "",
+              name: "_address",
               type: "address",
             },
           ],
-          name: "userGreetingCounter",
+          name: "getLocationList",
           outputs: [
             {
-              internalType: "uint256",
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct YourContract.LatLng[]",
               name: "",
-              type: "uint256",
+              type: "tuple[]",
             },
           ],
           stateMutability: "view",
@@ -137,14 +256,594 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "withdraw",
+          name: "getONE_YEAR",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "getTreeDeposit",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "treeOwner",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "firstDepositTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "nextDisbursement",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "balance",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct YourContract.TreeDeposit",
+              name: "treeDeposit",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "getTreeId",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "pure",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "refund",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "sendFundsToWallet",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "userAddress",
+              type: "address",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct YourContract.LatLng",
+              name: "location",
+              type: "tuple",
+            },
+          ],
+          name: "setLocation",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "setLocationForTests",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "trustedWallet",
+          outputs: [
+            {
+              internalType: "address payable",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+    },
+  },
+  11155111: {
+    YourContract: {
+      address: "0x3EA44cd5f4359287FB3Afcd101E2e2bAE84c5Ff2",
+      abi: [
+        {
+          inputs: [],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "trustedWallet",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "LogAllFundsSentToWallet",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "contributor",
+              type: "address",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
+                  type: "uint256",
+                },
+              ],
+              indexed: false,
+              internalType: "struct YourContract.LatLng",
+              name: "treeId",
+              type: "tuple",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "firstDepositTimestamp",
+              type: "uint256",
+            },
+          ],
+          name: "LogDeposited",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "trustedWallet",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "LogFundsSentToWallet",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "contributor",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "LogRefunded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "wallet",
+              type: "address",
+            },
+          ],
+          name: "LogVaultCreated",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "DONATION_VALUE",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "ONE_YEAR",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "depositValue",
+          outputs: [],
           stateMutability: "payable",
-          type: "receive",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          name: "deposits",
+          outputs: [
+            {
+              internalType: "address",
+              name: "treeOwner",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "firstDepositTimestamp",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "nextDisbursement",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "balance",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_address",
+              type: "address",
+            },
+          ],
+          name: "getLocationList",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct YourContract.LatLng[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getONE_YEAR",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "getTreeDeposit",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "treeOwner",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "firstDepositTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "nextDisbursement",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "balance",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct YourContract.TreeDeposit",
+              name: "treeDeposit",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "getTreeId",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "treeId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "pure",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "refund",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
+          ],
+          name: "sendFundsToWallet",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "userAddress",
+              type: "address",
+            },
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct YourContract.LatLng",
+              name: "location",
+              type: "tuple",
+            },
+          ],
+          name: "setLocation",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "setLocationForTests",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "trustedWallet",
+          outputs: [
+            {
+              internalType: "address payable",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
         },
       ],
       inheritedFunctions: {},

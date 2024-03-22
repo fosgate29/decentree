@@ -1,87 +1,186 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-// Useful for debugging. Remove when deploying to a live network.
-import "hardhat/console.sol";
-
-// Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
-// import "@openzeppelin/contracts/access/Ownable.sol";
+// Adapted from Open Zeppelin's RefundVault
 
 /**
- * A smart contract that allows changing a state variable of the contract and tracking the changes
- * It also allows the owner to withdraw the Ether in the contract
- * @author BuidlGuidl
+ * @title Vault
+ * @dev This contract is used for storing funds.
  */
 contract YourContract {
-	// State Variables
-	address public immutable owner;
-	string public greeting = "Building Unstoppable Apps!!!";
-	bool public premium = false;
-	uint256 public totalCounter = 0;
-	mapping(address => uint) public userGreetingCounter;
+	struct TreeDeposit {
+		address treeOwner; //who is contributing to the farmer
+		uint256 firstDepositTimestamp;
+		uint256 nextDisbursement;
+		uint256 balance;
+	}
 
-	// Events: a way to emit log statements from smart contract that can be listened to by external parties
-	event GreetingChange(
-		address indexed greetingSetter,
-		string newGreeting,
-		bool premium,
-		uint256 value
+	struct LatLng {
+		uint256 lat;
+		uint256 lng;
+	}
+
+	// Wallet from the project team
+	address payable public trustedWallet;
+
+	mapping(bytes32 => TreeDeposit) public deposits;
+
+	mapping(address => LatLng[]) private locations;
+
+	uint256 public constant ONE_YEAR = 2; // for tests. correct value is 365 days
+	uint256 public constant DONATION_VALUE = 1000; // 1000 wei for tests. correct value is 1 Ether
+
+	event LogVaultCreated(address indexed wallet);
+	event LogDeposited(
+		address indexed contributor,
+		LatLng treeId,
+		uint256 amount,
+		uint256 firstDepositTimestamp
+	);
+	event LogRefunded(
+		address indexed contributor,
+		bytes32 treeId,
+		uint256 amount
+	);
+	event LogFundsSentToWallet(
+		bytes32 indexed treeId,
+		address trustedWallet,
+		uint256 amount
+	);
+	event LogAllFundsSentToWallet(
+		bytes32 indexed treeId,
+		address trustedWallet,
+		uint256 amount
 	);
 
-	// Constructor: Called once on contract deployment
-	// Check packages/hardhat/deploy/00_deploy_your_contract.ts
-	constructor(address _owner) {
-		owner = _owner;
+	constructor() {
+		trustedWallet = payable(0x1fE926205440d6A61119d231FA28e1519514E2E5);
 	}
 
-	// Modifier: used to define a set of rules that must be met before or after a function is executed
-	// Check the withdraw() function
-	modifier isOwner() {
-		// msg.sender: predefined variable that represents address of the account that called the current function
-		require(msg.sender == owner, "Not the Owner");
-		_;
-	}
+	// Donator deposits a value. Donator can refund remain amount at any time
+	function depositValue(uint256 lat, uint256 lng) external payable {
+		//check if tree is available
+		bytes32 _treeId = getTreeId(lat, lng);
+		TreeDeposit memory deposit = deposits[_treeId];
 
-	/**
-	 * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
-	 *
-	 * @param _newGreeting (string memory) - new greeting to save on the contract
-	 */
-	function setGreeting(string memory _newGreeting) public payable {
-		// Print data to the hardhat chain console. Remove when deploying to a live network.
-		console.log(
-			"Setting new greeting '%s' from %s",
-			_newGreeting,
-			msg.sender
+		require(deposit.treeOwner == address(0), "Tree must not have an owner");
+		require(deposit.balance == 0, "Tree balance must be zero.");
+
+		require(
+			msg.value == DONATION_VALUE,
+			"Each tree must cost DONATION_VALUE"
 		);
 
-		// Change state variables
-		greeting = _newGreeting;
-		totalCounter += 1;
-		userGreetingCounter[msg.sender] += 1;
+		uint256 amount = msg.value;
+		uint256 fee_10percent = amount / 10;
+		uint256 remain = amount - fee_10percent;
 
-		// msg.value: built-in global variable that represents the amount of ether sent with the transaction
-		if (msg.value > 0) {
-			premium = true;
-		} else {
-			premium = false;
+		trustedWallet.transfer(fee_10percent); //first, transfer 10% to trusted wallet
+
+		deposits[_treeId] = TreeDeposit({
+			treeOwner: msg.sender,
+			firstDepositTimestamp: block.timestamp,
+			nextDisbursement: (block.timestamp + ONE_YEAR),
+			balance: remain
+		});
+
+		locations[msg.sender].push(LatLng({ lat: lat, lng: lng }));
+
+		emit LogDeposited(
+			msg.sender,
+			LatLng({ lat: lat, lng: lng }),
+			msg.value,
+			block.timestamp
+		);
+	}
+
+	function getTreeId(
+		uint256 lat,
+		uint256 lng
+	) public pure returns (bytes32 treeId) {
+		return keccak256(abi.encodePacked(lat, lng));
+	}
+
+	/// @dev Refunds ether to the contributors if in the contributors wants funds back.
+	function refund(uint256 lat, uint256 lng) external {
+		bytes32 _treeId = getTreeId(lat, lng);
+		TreeDeposit storage deposit = deposits[_treeId];
+
+		require(
+			deposit.balance > 0,
+			"Refund not allowed if deposit balance is 0."
+		);
+		require(
+			deposit.treeOwner == msg.sender,
+			"Only owner of the deposit can request a refund."
+		);
+		uint256 refundAmount = deposit.balance; //will refund what is lefted
+
+		(bool success, ) = msg.sender.call{ value: refundAmount }("");
+		require(success, "Transfer failed.");
+
+		emit LogRefunded(deposit.treeOwner, _treeId, refundAmount);
+	}
+
+	/// @dev Sends the disbursement amount to the wallet after the disbursement period has passed. Can be called by anyone.
+	function sendFundsToWallet(uint256 lat, uint256 lng) external {
+		bytes32 _treeId = getTreeId(lat, lng);
+		TreeDeposit storage deposit = deposits[_treeId];
+
+		require(
+			deposit.nextDisbursement <= block.timestamp,
+			"Next disbursement period timestamp has not yet passed, too early to withdraw."
+		);
+		require(deposit.balance > 0, "TreeDeposit balance is 0.");
+
+		if (
+			block.timestamp > deposit.nextDisbursement &&
+			block.timestamp < deposit.firstDepositTimestamp + 10 * (ONE_YEAR)
+		) {
+			uint256 initialDeposited = DONATION_VALUE;
+			uint256 fee_10percent = initialDeposited / 10;
+			uint256 remain = deposit.balance - fee_10percent;
+			deposit.balance = remain;
+			deposit.nextDisbursement = deposit.nextDisbursement + ONE_YEAR;
+			trustedWallet.transfer(fee_10percent);
+			emit LogFundsSentToWallet(_treeId, trustedWallet, fee_10percent);
 		}
-
-		// emit: keyword used to trigger an event
-		emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, msg.value);
+		//if more than 10 years has passed, all funds can be collected
+		else if (
+			block.timestamp >= deposit.firstDepositTimestamp + 10 * (ONE_YEAR)
+		) {
+			uint256 allFunds = deposit.balance;
+			deposit.balance = 0;
+			trustedWallet.transfer(allFunds);
+			emit LogAllFundsSentToWallet(_treeId, trustedWallet, allFunds);
+		}
 	}
 
-	/**
-	 * Function that allows the owner to withdraw all the Ether in the contract
-	 * The function can only be called by the owner of the contract as defined by the isOwner modifier
-	 */
-	function withdraw() public isOwner {
-		(bool success, ) = owner.call{ value: address(this).balance }("");
-		require(success, "Failed to send Ether");
+	function getTreeDeposit(
+		uint256 lat,
+		uint256 lng
+	) external view returns (TreeDeposit memory treeDeposit) {
+		return deposits[getTreeId(lat, lng)];
 	}
 
-	/**
-	 * Function that allows the contract to receive ETH
-	 */
-	receive() external payable {}
+	function getLocationList(
+		address _address
+	) public view returns (LatLng[] memory) {
+		return locations[_address];
+	}
+
+	function getONE_YEAR() public pure returns (uint256) {
+		return ONE_YEAR;
+	}
+
+	function setLocation(address userAddress, LatLng calldata location) public {
+		locations[userAddress].push(location);
+	}
+
+	function setLocationForTests() external {
+		locations[msg.sender].push(LatLng({ lat: 167490351, lng: 438709075 }));
+		locations[msg.sender].push(LatLng({ lat: 167490371, lng: 438709095 }));
+		locations[msg.sender].push(LatLng({ lat: 167490391, lng: 438709105 }));
+		locations[msg.sender].push(LatLng({ lat: 167490401, lng: 438709165 }));
+	}
 }

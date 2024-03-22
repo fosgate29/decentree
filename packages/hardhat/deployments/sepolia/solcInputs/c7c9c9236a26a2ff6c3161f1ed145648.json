@@ -1,0 +1,35 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/YourContract.sol": {
+      "content": "//SPDX-License-Identifier: MIT\npragma solidity >=0.8.0 <0.9.0;\n\n// Adapted from Open Zeppelin's RefundVault\n\n/**\n * @title Vault\n * @dev This contract is used for storing funds.\n */\ncontract YourContract {\n\tstruct TreeDeposit {\n\t\taddress treeOwner; //who is contributing to the farmer\n\t\tuint256 firstDepositTimestamp;\n\t\tuint256 nextDisbursement;\n\t\tuint256 balance;\n\t}\n\n\tstruct LatLng {\n\t\tuint256 lat;\n\t\tuint256 lng;\n\t}\n\n\t// Wallet from the project team\n\taddress payable public trustedWallet;\n\n\tmapping(bytes32 => TreeDeposit) public deposits;\n\n\tmapping(address => LatLng[]) private locations;\n\n\tuint256 public constant ONE_YEAR = 2; // for tests. correct value is 365 days\n\tuint256 public constant DONATION_VALUE = 1000; // 1000 wei for tests. correct value is 1 Ether\n\n\tevent LogVaultCreated(address indexed wallet);\n\tevent LogDeposited(\n\t\taddress indexed contributor,\n\t\tLatLng treeId,\n\t\tuint256 amount,\n\t\tuint256 firstDepositTimestamp\n\t);\n\tevent LogRefunded(\n\t\taddress indexed contributor,\n\t\tbytes32 treeId,\n\t\tuint256 amount\n\t);\n\tevent LogFundsSentToWallet(\n\t\tbytes32 indexed treeId,\n\t\taddress trustedWallet,\n\t\tuint256 amount\n\t);\n\tevent LogAllFundsSentToWallet(\n\t\tbytes32 indexed treeId,\n\t\taddress trustedWallet,\n\t\tuint256 amount\n\t);\n\n\tconstructor() {\n\t\ttrustedWallet = payable(0x1fE926205440d6A61119d231FA28e1519514E2E5);\n\t}\n\n\t// Donator deposits a value. Donator can refund remain amount at any time\n\tfunction depositValue(uint256 lat, uint256 lng) external payable {\n\t\t//check if tree is available\n\t\tbytes32 _treeId = getTreeId(lat, lng);\n\t\tTreeDeposit memory deposit = deposits[_treeId];\n\n\t\trequire(deposit.treeOwner == address(0), \"Tree must not have an owner\");\n\t\trequire(deposit.balance == 0, \"Tree balance must be zero.\");\n\n\t\trequire(\n\t\t\tmsg.value == DONATION_VALUE,\n\t\t\t\"Each tree must cost DONATION_VALUE\"\n\t\t);\n\n\t\tuint256 amount = msg.value;\n\t\tuint256 fee_10percent = amount / 10;\n\t\tuint256 remain = amount - fee_10percent;\n\n\t\ttrustedWallet.transfer(fee_10percent); //first, transfer 10% to trusted wallet\n\n\t\tdeposits[_treeId] = TreeDeposit({\n\t\t\ttreeOwner: msg.sender,\n\t\t\tfirstDepositTimestamp: block.timestamp,\n\t\t\tnextDisbursement: (block.timestamp + ONE_YEAR),\n\t\t\tbalance: remain\n\t\t});\n\n\t\tlocations[msg.sender].push(LatLng({ lat: lat, lng: lng }));\n\n\t\temit LogDeposited(\n\t\t\tmsg.sender,\n\t\t\tLatLng({ lat: lat, lng: lng }),\n\t\t\tmsg.value,\n\t\t\tblock.timestamp\n\t\t);\n\t}\n\n\tfunction getTreeId(\n\t\tuint256 lat,\n\t\tuint256 lng\n\t) public pure returns (bytes32 treeId) {\n\t\treturn keccak256(abi.encodePacked(lat, lng));\n\t}\n\n\t/// @dev Refunds ether to the contributors if in the contributors wants funds back.\n\tfunction refund(uint256 lat, uint256 lng) external {\n\t\tbytes32 _treeId = getTreeId(lat, lng);\n\t\tTreeDeposit storage deposit = deposits[_treeId];\n\n\t\trequire(\n\t\t\tdeposit.balance > 0,\n\t\t\t\"Refund not allowed if deposit balance is 0.\"\n\t\t);\n\t\trequire(\n\t\t\tdeposit.treeOwner == msg.sender,\n\t\t\t\"Only owner of the deposit can request a refund.\"\n\t\t);\n\t\tuint256 refundAmount = deposit.balance; //will refund what is lefted\n\n\t\t(bool success, ) = msg.sender.call{ value: refundAmount }(\"\");\n\t\trequire(success, \"Transfer failed.\");\n\n\t\temit LogRefunded(deposit.treeOwner, _treeId, refundAmount);\n\t}\n\n\t/// @dev Sends the disbursement amount to the wallet after the disbursement period has passed. Can be called by anyone.\n\tfunction sendFundsToWallet(uint256 lat, uint256 lng) external {\n\t\tbytes32 _treeId = getTreeId(lat, lng);\n\t\tTreeDeposit storage deposit = deposits[_treeId];\n\n\t\trequire(\n\t\t\tdeposit.nextDisbursement <= block.timestamp,\n\t\t\t\"Next disbursement period timestamp has not yet passed, too early to withdraw.\"\n\t\t);\n\t\trequire(deposit.balance > 0, \"TreeDeposit balance is 0.\");\n\n\t\tif (\n\t\t\tblock.timestamp > deposit.nextDisbursement &&\n\t\t\tblock.timestamp < deposit.firstDepositTimestamp + 10 * (ONE_YEAR)\n\t\t) {\n\t\t\tuint256 initialDeposited = DONATION_VALUE;\n\t\t\tuint256 fee_10percent = initialDeposited / 10;\n\t\t\tuint256 remain = deposit.balance - fee_10percent;\n\t\t\tdeposit.balance = remain;\n\t\t\tdeposit.nextDisbursement = deposit.nextDisbursement + ONE_YEAR;\n\t\t\ttrustedWallet.transfer(fee_10percent);\n\t\t\temit LogFundsSentToWallet(_treeId, trustedWallet, fee_10percent);\n\t\t}\n\t\t//if more than 10 years has passed, all funds can be collected\n\t\telse if (\n\t\t\tblock.timestamp >= deposit.firstDepositTimestamp + 10 * (ONE_YEAR)\n\t\t) {\n\t\t\tuint256 allFunds = deposit.balance;\n\t\t\tdeposit.balance = 0;\n\t\t\ttrustedWallet.transfer(allFunds);\n\t\t\temit LogAllFundsSentToWallet(_treeId, trustedWallet, allFunds);\n\t\t}\n\t}\n\n\tfunction getTreeDeposit(\n\t\tuint256 lat,\n\t\tuint256 lng\n\t) external view returns (TreeDeposit memory treeDeposit) {\n\t\treturn deposits[getTreeId(lat, lng)];\n\t}\n\n\tfunction getLocationList(\n\t\taddress _address\n\t) public view returns (LatLng[] memory) {\n\t\treturn locations[_address];\n\t}\n\n\tfunction getONE_YEAR() public pure returns (uint256) {\n\t\treturn ONE_YEAR;\n\t}\n\n\tfunction setLocation(address userAddress, LatLng calldata location) public {\n\t\tlocations[userAddress].push(location);\n\t}\n\n\tfunction setLocationForTests() external {\n\t\tlocations[msg.sender].push(LatLng({ lat: 167490351, lng: 438709075 }));\n\t\tlocations[msg.sender].push(LatLng({ lat: 167490371, lng: 438709095 }));\n\t\tlocations[msg.sender].push(LatLng({ lat: 167490391, lng: 438709105 }));\n\t\tlocations[msg.sender].push(LatLng({ lat: 167490401, lng: 438709165 }));\n\t}\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}

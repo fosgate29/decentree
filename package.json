@@ -45,6 +45,7 @@
   },
   "packageManager": "yarn@3.2.3",
   "dependencies": {
+    "@types/google.maps": "^3.55.5",
     "@vis.gl/react-google-maps": "^0.8.0"
   }
 }

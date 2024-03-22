@@ -1,69 +1,113 @@
 "use client";
 
-import Link from "next/link";
-import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
+import { useState } from "react";
+import { APIProvider, AdvancedMarker, Map, Marker, Pin } from "@vis.gl/react-google-maps";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import { BanknotesIcon } from "@heroicons/react/24/outline";
+import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
-const position = { lat: -16.5068934, lng: -44.2878931 };
-
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+type LatLng = {
+  lat: number;
+  lng: number;
+};
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
+  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const initialPosition = { lat: -16.5068934, lng: -44.2878931 };
+
+  //const [position, setPosition] = useState({ lat: -16.5068934, lng: -44.2878931 });
+  const [position, setPosition] = useState<LatLng | null>(initialPosition); //useState(new google.maps.LatLng(-16.5068934, -44.2878931));
+
+  const [contractPosition, setContractPosition] = useState({ lat: BigInt(165068934), lng: BigInt(442878931) });
+
+  const { address } = useAccount();
+
+  const { data: locations } = useScaffoldContractRead({
+    contractName: "YourContract",
+    functionName: "getLocationList",
+    args: [address],
+  });
+
+  const PRECISION = 10000000;
+
+  const setW3W = (newCenter: LatLng | null) => {
+    //const setW3W = ( {lat: as number , lng: number } | null) => {
+    let lat = Number(newCenter?.lat);
+    let lng = Number(newCenter?.lng);
+
+    setPosition(newCenter);
+
+    lat = Math.abs(Math.trunc(lat * PRECISION));
+    lng = Math.abs(Math.trunc(lng * PRECISION));
+    setContractPosition({ lat: BigInt(lat), lng: BigInt(lng) });
+  };
+
+  const { writeAsync } = useScaffoldContractWrite({
+    contractName: "YourContract",
+    functionName: "depositValue",
+    args: [contractPosition.lat, contractPosition.lng],
+    value: BigInt(1000),
+    blockConfirmations: 1,
+    onBlockConfirmation: txnReceipt => {
+      console.log("Transaction blockHash", txnReceipt.blockHash);
+      setPosition(initialPosition);
+    },
+  });
 
   return (
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
         <div className="px-5">
           <h1 className="text-center">
-            <span className="block text-2xl mb-2">Decentreelized</span>
+            <span className="block text-2xl mb-2">DecenTREElized</span>
           </h1>
+
           <div className="flex justify-center items-center space-x-2">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
+            <BanknotesIcon className="h-8 w-8 fill-secondary" />
+            <p>
+              Select an area marked with the red map pin, then click{" "}
+              <div className="btn btn-primary btn-sm font-normal gap-1" onClick={() => writeAsync()}>
+                Donate
+              </div>
+            </p>
           </div>
+
           <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
             <Map
+              mapId={"bf51a910020fa25a"}
               defaultCenter={position}
               defaultZoom={15}
-              mapId={null}
               mapTypeId={"satellite"}
               gestureHandling={"greedy"}
               disableDefaultUI={true}
+              disableDoubleClickZoom={true}
+              zoomControl={true}
             >
-              <div style={{ height: 400 }}>
-                <Marker position={position} />
+              <div style={{ height: 400, width: 600 }}>
+                <Marker
+                  position={position}
+                  draggable
+                  onDrag={(e: { latLng: { lat: () => any; lng: () => any } }) =>
+                    setW3W({ lat: e.latLng?.lat() ?? 0, lng: e.latLng?.lng() ?? 0 })
+                  }
+                />
+                {/* advanced marker with customized pin */}
+                {locations?.map(coordinate => (
+                  <AdvancedMarker
+                    key={coordinate.lat + "_" + coordinate.lng}
+                    position={{
+                      lat: (Number(coordinate.lat) * -1) / PRECISION,
+                      lng: (Number(coordinate.lng) * -1) / PRECISION,
+                    }}
+                    title={"Donated area"}
+                  >
+                    <Pin background={"#22ccff"} borderColor={"#1e89a1"} glyphColor={"#0f677a"}></Pin>
+                  </AdvancedMarker>
+                ))}
               </div>
             </Map>
           </APIProvider>
-        </div>
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </>

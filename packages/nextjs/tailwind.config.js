@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}", "./utils/**/*.{js,ts,jsx,tsx}"],
   plugins: [require("daisyui")],
@@ -8,19 +7,19 @@ module.exports = {
     themes: [
       {
         light: {
-          primary: "#93BBFB",
-          "primary-content": "#212638",
-          secondary: "#DAE8FF",
-          "secondary-content": "#212638",
-          accent: "#93BBFB",
-          "accent-content": "#212638",
-          neutral: "#212638",
+          primary: "#6CBF8C", // Adjusted primary color to green
+          "primary-content": "#487d6e",
+          secondary: "#b6dec1",
+          "secondary-content": "#487d6e",
+          accent: "#6CBF8C", // Adjusted accent color to green
+          "accent-content": "#487d6e",
+          neutral: "#487d6e",
           "neutral-content": "#ffffff",
           "base-100": "#ffffff",
           "base-200": "#f4f8ff",
-          "base-300": "#DAE8FF",
-          "base-content": "#212638",
-          info: "#93BBFB",
+          "base-300": "#b6dec1",
+          "base-content": "#487d6e",
+          info: "#6CBF8C", // Adjusted info color to green
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
@@ -40,19 +39,19 @@ module.exports = {
       },
       {
         dark: {
-          primary: "#212638",
+          primary: "#6CBF8C", // Adjusted primary color to green
           "primary-content": "#F9FBFF",
-          secondary: "#323f61",
+          secondary: "#316132",
           "secondary-content": "#F9FBFF",
-          accent: "#4969A6",
+          accent: "#8FD39E", // Adjusted accent color to a lighter shade of green
           "accent-content": "#F9FBFF",
           neutral: "#F9FBFF",
-          "neutral-content": "#385183",
-          "base-100": "#385183",
-          "base-200": "#2A3655",
-          "base-300": "#212638",
+          "neutral-content": "#388037",
+          "base-100": "#388037",
+          "base-200": "#2d4731",
+          "base-300": "#487d6e",
           "base-content": "#F9FBFF",
-          info: "#385183",
+          info: "#388037",
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
