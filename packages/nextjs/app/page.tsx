@@ -68,7 +68,7 @@ const Home: NextPage = () => {
             <p>
               Select an area marked with the red map pin, then click{" "}
               <div className="btn btn-primary btn-sm font-normal gap-1" onClick={() => writeAsync()}>
-                Donate
+                Donate (1000 wei)
               </div>
             </p>
           </div>
