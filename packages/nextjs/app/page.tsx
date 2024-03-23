@@ -67,9 +67,9 @@ const Home: NextPage = () => {
             <BanknotesIcon className="h-8 w-8 fill-secondary" />
             <p>
               Select an area marked with the red map pin, then click{" "}
-              <div className="btn btn-primary btn-sm font-normal gap-1" onClick={() => writeAsync()}>
+              <span className="btn btn-primary btn-sm font-normal gap-1" onClick={() => writeAsync()}>
                 Donate (1000 wei)
-              </div>
+              </span>
             </p>
           </div>
 
