@@ -4,7 +4,7 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
+import { BanknotesIcon, Bars3Icon, BugAntIcon, ReceiptRefundIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -16,8 +16,14 @@ type HeaderMenuLink = {
 
 export const menuLinks: HeaderMenuLink[] = [
   {
-    label: "Home",
+    label: "Donate",
     href: "/",
+    icon: <BanknotesIcon className="h-4 w-4" />,
+  },
+  {
+    label: "Refund donation",
+    href: "/refund",
+    icon: <ReceiptRefundIcon className="h-4 w-4" />,
   },
   {
     label: "Debug Contracts",

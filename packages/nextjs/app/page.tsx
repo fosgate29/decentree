@@ -7,17 +7,13 @@ import { useAccount } from "wagmi";
 import { BanknotesIcon } from "@heroicons/react/24/outline";
 import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
-type LatLngLiteral = {
-  lat: number;
-  lng: number;
-};
-
 const Home: NextPage = () => {
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-  const initialPosition = { lat: -16.5068934, lng: -44.2878931 };
+
+  const initialPosition: google.maps.LatLngLiteral = { lat: -16.5068934, lng: -44.2878931 };
 
   //const [position, setPosition] = useState({ lat: -16.5068934, lng: -44.2878931 });
-  const [position, setPosition] = useState<LatLngLiteral | undefined>(initialPosition); //
+  const [position, setPosition] = useState<google.maps.LatLngLiteral | undefined>(initialPosition); //
 
   const [contractPosition, setContractPosition] = useState({ lat: BigInt(165068934), lng: BigInt(442878931) });
 
@@ -31,7 +27,7 @@ const Home: NextPage = () => {
 
   const PRECISION = 10000000;
 
-  const setW3W = (newCenter: LatLngLiteral | undefined) => {
+  const setW3W = (newCenter: google.maps.LatLngLiteral | undefined) => {
     //const setW3W = ( {lat: as number , lng: number } | null) => {
     let lat = Number(newCenter?.lat);
     let lng = Number(newCenter?.lng);
@@ -91,7 +87,6 @@ const Home: NextPage = () => {
                     setW3W({ lat: e.latLng?.lat() ?? 0, lng: e.latLng?.lng() ?? 0 })
                   }
                 />
-                {/* advanced marker with customized pin */}
                 {locations?.map(coordinate => (
                   <AdvancedMarker
                     key={coordinate.lat + "_" + coordinate.lng}
