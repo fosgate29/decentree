@@ -219,6 +219,16 @@ const deployedContracts = {
               name: "balance",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -236,6 +246,26 @@ const deployedContracts = {
             {
               components: [
                 {
+                  internalType: "address",
+                  name: "treeOwner",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "firstDepositTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "nextDisbursement",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "balance",
+                  type: "uint256",
+                },
+                {
                   internalType: "uint256",
                   name: "lat",
                   type: "uint256",
@@ -246,8 +276,8 @@ const deployedContracts = {
                   type: "uint256",
                 },
               ],
-              internalType: "struct YourContract.LatLng[]",
-              name: "",
+              internalType: "struct YourContract.TreeDeposit[]",
+              name: "treeDeposits",
               type: "tuple[]",
             },
           ],
@@ -302,6 +332,16 @@ const deployedContracts = {
                 {
                   internalType: "uint256",
                   name: "balance",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
                   type: "uint256",
                 },
               ],
@@ -429,7 +469,7 @@ const deployedContracts = {
   },
   11155111: {
     YourContract: {
-      address: "0x3EA44cd5f4359287FB3Afcd101E2e2bAE84c5Ff2",
+      address: "0xEc7e884e46E92b69b0bd19Bb23E68095235C9f1a",
       abi: [
         {
           inputs: [],
@@ -641,6 +681,16 @@ const deployedContracts = {
               name: "balance",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "lat",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lng",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -658,6 +708,26 @@ const deployedContracts = {
             {
               components: [
                 {
+                  internalType: "address",
+                  name: "treeOwner",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "firstDepositTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "nextDisbursement",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "balance",
+                  type: "uint256",
+                },
+                {
                   internalType: "uint256",
                   name: "lat",
                   type: "uint256",
@@ -668,8 +738,8 @@ const deployedContracts = {
                   type: "uint256",
                 },
               ],
-              internalType: "struct YourContract.LatLng[]",
-              name: "",
+              internalType: "struct YourContract.TreeDeposit[]",
+              name: "treeDeposits",
               type: "tuple[]",
             },
           ],
@@ -724,6 +794,16 @@ const deployedContracts = {
                 {
                   internalType: "uint256",
                   name: "balance",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lat",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lng",
                   type: "uint256",
                 },
               ],

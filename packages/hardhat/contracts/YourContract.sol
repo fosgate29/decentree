@@ -13,6 +13,8 @@ contract YourContract {
 		uint256 firstDepositTimestamp;
 		uint256 nextDisbursement;
 		uint256 balance;
+		uint256 lat;
+		uint256 lng;
 	}
 
 	struct LatLng {
@@ -24,7 +26,6 @@ contract YourContract {
 	address payable public trustedWallet;
 
 	mapping(bytes32 => TreeDeposit) public deposits;
-
 	mapping(address => LatLng[]) private locations;
 
 	uint256 public constant ONE_YEAR = 2; // for tests. correct value is 365 days
@@ -81,7 +82,9 @@ contract YourContract {
 			treeOwner: msg.sender,
 			firstDepositTimestamp: block.timestamp,
 			nextDisbursement: (block.timestamp + ONE_YEAR),
-			balance: remain
+			balance: remain,
+			lat: lat,
+			lng: lng
 		});
 
 		locations[msg.sender].push(LatLng({ lat: lat, lng: lng }));
@@ -115,6 +118,8 @@ contract YourContract {
 			"Only owner of the deposit can request a refund."
 		);
 		uint256 refundAmount = deposit.balance; //will refund what is lefted
+
+		deposit.balance = 0;
 
 		(bool success, ) = msg.sender.call{ value: refundAmount }("");
 		require(success, "Transfer failed.");
@@ -165,8 +170,17 @@ contract YourContract {
 
 	function getLocationList(
 		address _address
-	) public view returns (LatLng[] memory) {
-		return locations[_address];
+	) public view returns (TreeDeposit[] memory treeDeposits) {
+		LatLng[] memory latlngs = locations[_address];
+		uint256 size = latlngs.length;
+		treeDeposits = new TreeDeposit[](size);
+		for (uint256 i = 0; i < size; i++) {
+			uint256 lat = locations[_address][i].lat;
+			uint256 lng = locations[_address][i].lng;
+			bytes32 key = getTreeId(lat, lng);
+			TreeDeposit memory treeDeposit = deposits[key];
+			treeDeposits[i] = treeDeposit;
+		}
 	}
 
 	function getONE_YEAR() public pure returns (uint256) {

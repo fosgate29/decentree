@@ -14,3 +14,6 @@ export * from "./useTransactor";
 export * from "./useFetchBlocks";
 export * from "./useContractLogs";
 export * from "./useAutoConnect";
+
+// implemented hooks
+export * from "./useFetchLocations";
