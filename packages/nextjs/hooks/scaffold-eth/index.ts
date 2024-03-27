@@ -17,3 +17,4 @@ export * from "./useAutoConnect";
 
 // implemented hooks
 export * from "./useFetchLocations";
+export * from "./useFetchWeather";

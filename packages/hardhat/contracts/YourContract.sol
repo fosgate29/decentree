@@ -28,7 +28,7 @@ contract YourContract {
 	mapping(bytes32 => TreeDeposit) public deposits;
 	mapping(address => LatLng[]) private locations;
 
-	uint256 public constant ONE_YEAR = 2; // for tests. correct value is 365 days
+	uint256 public constant ONE_YEAR = 365 days;
 	uint256 public constant DONATION_VALUE = 1000; // 1000 wei for tests. correct value is 1 Ether
 
 	event LogVaultCreated(address indexed wallet);

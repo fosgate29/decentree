@@ -4,7 +4,13 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BanknotesIcon, Bars3Icon, BugAntIcon, ReceiptRefundIcon } from "@heroicons/react/24/outline";
+import {
+  BanknotesIcon,
+  Bars3Icon,
+  BugAntIcon,
+  InformationCircleIcon,
+  ReceiptRefundIcon,
+} from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick } from "~~/hooks/scaffold-eth";
 
@@ -29,6 +35,11 @@ export const menuLinks: HeaderMenuLink[] = [
     label: "Debug Contracts",
     href: "/debug",
     icon: <BugAntIcon className="h-4 w-4" />,
+  },
+  {
+    label: "About Us",
+    href: "/aboutus",
+    icon: <InformationCircleIcon className="h-4 w-4" />,
   },
 ];
 
@@ -99,7 +110,7 @@ export const Header = () => {
             <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">DecenTREElized</span>
+            <span className="font-bold leading-tight">decenTREElized</span>
             <span className="text-xs">Help developing a small community</span>
           </div>
         </Link>

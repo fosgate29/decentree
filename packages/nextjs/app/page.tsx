@@ -4,8 +4,9 @@ import { useState } from "react";
 import { APIProvider, AdvancedMarker, Map, Marker, Pin } from "@vis.gl/react-google-maps";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { BanknotesIcon } from "@heroicons/react/24/outline";
+import { BanknotesIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useFetchWeather } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -18,6 +19,8 @@ const Home: NextPage = () => {
   const [contractPosition, setContractPosition] = useState({ lat: BigInt(165068934), lng: BigInt(442878931) });
 
   const { address } = useAccount();
+
+  const { weatherData } = useFetchWeather(position?.lat, position?.lng);
 
   const { data: locations } = useScaffoldContractRead({
     contractName: "YourContract",
@@ -50,22 +53,33 @@ const Home: NextPage = () => {
     },
   });
 
-  return (
+  https: return (
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
         <div className="px-5">
           <h1 className="text-center">
-            <span className="block text-2xl mb-2">DecenTREElized</span>
+            <span className="block text-2xl mb-2">decenTREElized</span>
           </h1>
 
           <div className="flex justify-center items-center space-x-2">
-            <BanknotesIcon className="h-8 w-8 fill-secondary" />
+            <BanknotesIcon className="h-4 w-4 fill-secondary" />
             <p>
-              Select an area marked with the red map pin, then click{" "}
-              <span className="btn btn-primary btn-sm font-normal gap-1" onClick={() => writeAsync()}>
+              Drag red pin to an area, then click{" "}
+              <span className="btn btn-primary btn-sm  " onClick={() => writeAsync()}>
                 Donate (1000 wei)
               </span>
             </p>
+          </div>
+
+          <div className="flex justify-center items-center space-x-2">
+            <GlobeAltIcon className="h-4 w-4 fill-secondary" />
+            <span className="hover text-sm">Nearest city: {weatherData?.name}</span>
+            <span>·</span>
+            <span className="hover text-sm">Current Weather: {weatherData?.weather[0].description}</span>
+            <span>·</span>
+            <span className="hover text-sm">
+              Current Temp: {weatherData?.main.temp ? Math.trunc(weatherData.main.temp) : ""}&deg;C
+            </span>
           </div>
 
           <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
