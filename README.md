@@ -1,6 +1,6 @@
 # 🌿 decenTREElized
 
-Built using <a href="https://scaffoldeth.io">Scaffold-ETH 2</a>
+Built using <a href="https://scaffoldeth.io">Scaffold-ETH 2</a> - <a href="https://developers.google.com/maps">GoogleMaps API</a> - <a href="https://openweathermap.org/">OpenWeather API</a>
 
 ## Why decenTREElized ?
 
